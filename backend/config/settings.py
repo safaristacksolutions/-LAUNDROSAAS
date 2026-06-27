@@ -26,6 +26,7 @@ SHARED_APPS = [
     "apps.tenants",
     "apps.billing",
     "apps.analytics",
+    "apps.accounts",
 ]
 
 TENANT_APPS = [
@@ -33,7 +34,6 @@ TENANT_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "rest_framework",
-    "apps.accounts",
     "apps.laundry",
     "apps.payments",
     "apps.notifications",
@@ -85,7 +85,7 @@ DATABASES = {
         "USER": config("DB_USER", default="laundrosaas"),
         "PASSWORD": config("DB_PASSWORD", default="laundrosaas_dev"),
         "HOST": config("DB_HOST", default="localhost"),
-        "PORT": config("DB_PORT", default="5432"),
+        "PORT": config("DB_PORT", default="5433"),
     }
 }
 
