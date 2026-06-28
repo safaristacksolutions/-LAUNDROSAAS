@@ -1,23 +1,14 @@
 {
-  "framework": null,
-  "buildCommand": null,
-  "outputDirectory": null,
-  "installCommand": null,
-  "experimentalServices": {
-    "frontend": {
-      "root": "frontend",
-      "routePrefix": "/",
-      "framework": "vite"
-    },
-    "backend": {
-      "root": "backend",
-      "routePrefix": "/_/backend"
-    }
-  },
+  "buildCommand": "cd frontend && npm run build",
+  "outputDirectory": "frontend/dist",
+  "installCommand": "cd frontend && npm install",
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/_/backend/api/$1"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
-  ]
+  ],
+  "github": {
+    "silent": true
+  }
 }
