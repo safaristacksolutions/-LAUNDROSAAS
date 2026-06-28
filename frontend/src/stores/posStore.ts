@@ -19,7 +19,7 @@ interface POSState {
   // Actions
   setSearchQuery: (q: string) => void;
   searchCustomer: (phone: string) => Promise<void>;
-  selectCustomer: (c: Customer) => void;
+  selectCustomer: (c: Customer | null) => void;
   loadServices: () => Promise<void>;
   addToCart: (service: Service) => void;
   removeFromCart: (index: number) => void;
