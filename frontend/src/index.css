@@ -1,3 +1,5 @@
+@import url("https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,6 +9,10 @@
     --color-rent-safe: #16a34a;
     --color-rent-warning: #ca8a04;
     --color-rent-critical: #dc2626;
+  }
+
+  html {
+    font-family: "Satoshi", system-ui, -apple-system, sans-serif;
   }
 }
 

@@ -39,6 +39,19 @@ class User(AbstractUser):
         return f"{self.get_full_name() or self.username} ({self.get_role_display()})"
 
 
+class PasswordResetCode(models.Model):
+    phone = models.CharField(max_length=20)
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_used = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = "password_reset_codes"
+
+    def __str__(self):
+        return f"{self.phone}: {self.code}"
+
+
 class AuditLog(models.Model):
     ACTION_CHOICES = [
         ("order_created", "Order Created"),

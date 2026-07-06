@@ -4,6 +4,8 @@ import { AppLayout } from "./components/layout/AppLayout";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import POSScreen from "./pages/pos/POSScreen";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import EmployeeTaskQueue from "./pages/employee/EmployeeTaskQueue";
@@ -50,14 +52,12 @@ export default function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/pos" />} />
       <Route path="/register" element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/pos" />} />
+      <Route path="/forgot-password" element={!isAuthenticated ? <ForgotPasswordPage /> : <Navigate to="/pos" />} />
+      <Route path="/reset-password" element={!isAuthenticated ? <ResetPasswordPage /> : <Navigate to="/pos" />} />
       <Route path="/track/:orderId" element={<CustomerTracker />} />
 
-      {/* App Layout with Sidebar */}
       <Route element={<AppLayout />}>
-        {/* Cashier routes */}
         <Route path="/pos" element={<CashierRoute><POSScreen /></CashierRoute>} />
-
-        {/* Admin routes */}
         <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
         <Route path="/orders" element={<AdminRoute><OrdersPage /></AdminRoute>} />
         <Route path="/customers" element={<AdminRoute><CustomersPage /></AdminRoute>} />
@@ -65,11 +65,7 @@ export default function App() {
         <Route path="/inventory" element={<AdminRoute><InventoryPage /></AdminRoute>} />
         <Route path="/employees" element={<AdminRoute><EmployeesPage /></AdminRoute>} />
         <Route path="/reports" element={<AdminRoute><ReportsPage /></AdminRoute>} />
-
-        {/* Employee routes */}
         <Route path="/employee" element={<EmployeeRoute><EmployeeTaskQueue /></EmployeeRoute>} />
-
-        {/* SuperAdmin routes */}
         <Route path="/superadmin" element={<AdminRoute><SuperAdminPanel /></AdminRoute>} />
       </Route>
     </Routes>

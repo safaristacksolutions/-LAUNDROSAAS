@@ -8,6 +8,10 @@ export const auth = {
   me: () => api.get<User>("/auth/me/"),
   register: (data: { phone: string; password: string; confirm_password: string; first_name: string; last_name: string; role: string }) =>
     api.post<{ user: User; access: string; refresh: string }>("/auth/register/", data),
+  forgotPassword: (phone: string) =>
+    api.post<{ message: string; code: string }>("/auth/forgot-password/", { phone }),
+  resetPassword: (phone: string, code: string, new_password: string) =>
+    api.post<{ message: string }>("/auth/reset-password/", { phone, code, new_password }),
 };
 
 export const services = {
