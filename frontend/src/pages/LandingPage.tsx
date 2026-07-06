@@ -45,7 +45,7 @@ export default function LandingPage() {
       <nav className="fixed top-0 w-full bg-white/90 backdrop-blur-md z-50 border-b">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">🧺</span>
+            <img src="https://img.icons8.com/fluency/48/laundry.png" alt="" className="w-7 h-7" />
             <span className="font-bold text-xl">LaundroSaaS</span>
           </div>
           <div className="flex items-center gap-4">
@@ -104,7 +104,7 @@ export default function LandingPage() {
           </div>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-white rounded-2xl p-8 shadow-lg border border-red-100 hover:shadow-xl transition-shadow group">
-              <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">📞</div>
+              <img src="https://img.icons8.com/fluency/96/ringer-volume.png" alt="" className="w-12 h-12 mb-4 group-hover:scale-110 transition-transform" />
               <h3 className="text-2xl font-bold text-gray-900 mb-3">"Is my order ready?"</h3>
               <p className="text-gray-500 leading-relaxed">
                 Customers call 3-5 times per order. Each call interrupts your cashier and wastes time.
@@ -112,7 +112,7 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="bg-white rounded-2xl p-8 shadow-lg border border-red-100 hover:shadow-xl transition-shadow group">
-              <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">💰</div>
+              <img src="https://img.icons8.com/fluency/96/money-box.png" alt="" className="w-12 h-12 mb-4 group-hover:scale-110 transition-transform" />
               <h3 className="text-2xl font-bold text-gray-900 mb-3">"Can I pay rent?"</h3>
               <p className="text-gray-500 leading-relaxed">
                 Rent day is the most stressful day of the month. LaundroSaaS auto-reserves a percentage
@@ -238,7 +238,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 py-12">
         <div className="max-w-6xl mx-auto px-6 text-center">
-          <div className="text-3xl mb-4">🧺</div>
+          <img src="https://img.icons8.com/fluency/96/laundry.png" alt="" className="w-10 h-10 mx-auto mb-4" />
           <p className="font-bold text-white text-lg mb-2">LaundroSaaS</p>
           <p className="text-sm">Multi-tenant laundry management for Kenya</p>
           <div className="mt-8 text-xs">© 2026 LaundroSaaS. Built in Nairobi, Kenya.</div>

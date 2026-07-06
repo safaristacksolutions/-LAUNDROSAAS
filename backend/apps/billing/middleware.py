@@ -25,19 +25,15 @@ class PlanEnforcementMiddleware:
             return self.get_response(request)
 
         tenant = request.tenant
-        if tenant.subscription_status == "expired":
+
+        now = timezone.now()
+        is_trial_expired = tenant.trial_ends_at and now > tenant.trial_ends_at
+        is_sub_expired = tenant.subscription_starts_at and (now - tenant.subscription_starts_at).days > 30
+
+        if not tenant.is_active or (is_trial_expired and is_sub_expired):
             return JsonResponse(
-                {"error": "Subscription expired", "code": "subscription_expired"},
+                {"error": "Subscription expired. Please renew to continue.", "code": "subscription_expired"},
                 status=402,
             )
-
-        if tenant.subscription_status == "past_due":
-            from .models import Subscription
-            sub = Subscription.objects.filter(tenant=tenant, status="active").first()
-            if sub and (timezone.now() - sub.renewed_at).days > 3:
-                return JsonResponse(
-                    {"error": "Payment overdue. Please update billing details.", "code": "payment_past_due"},
-                    status=402,
-                )
 
         return self.get_response(request)

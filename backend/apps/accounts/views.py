@@ -44,3 +44,10 @@ class MeView(views.APIView):
     def get(self, request):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
+
+
+class EmployeeListView(generics.ListAPIView):
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        return User.objects.filter(role__in=["employee", "cashier", "admin"]).order_by("id")

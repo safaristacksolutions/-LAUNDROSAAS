@@ -163,6 +163,14 @@ AT_API_KEY = config("AT_API_KEY", default="")
 AT_USERNAME = config("AT_USERNAME", default="sandbox")
 AT_SENDER_ID = config("AT_SENDER_ID", default="")
 
+# Seed defaults (override for production)
+SEED_ADMIN_PHONE = config("SEED_ADMIN_PHONE", default="0712345678")
+SEED_CASHIER_PHONE = config("SEED_CASHIER_PHONE", default="0712000001")
+SEED_EMPLOYEE_PHONE = config("SEED_EMPLOYEE_PHONE", default="0712000002")
+SEED_ADMIN_PASSWORD = config("SEED_ADMIN_PASSWORD", default="change-me-admin")
+SEED_CASHIER_PASSWORD = config("SEED_CASHIER_PASSWORD", default="change-me-cashier")
+SEED_EMPLOYEE_PASSWORD = config("SEED_EMPLOYEE_PASSWORD", default="change-me-emp")
+
 # Firebase (optional)
 FIREBASE_CREDENTIALS = config("FIREBASE_CREDENTIALS", default="")
 
