@@ -5,7 +5,7 @@ export interface User {
   phone: string;
   first_name: string;
   last_name: string;
-  role: "admin" | "cashier" | "employee";
+  role: "admin" | "cashier" | "employee" | "superadmin";
   is_onboarded: boolean;
 }
 
@@ -125,4 +125,41 @@ export interface CartItem {
   quantity_kg?: number;
   quantity_items?: number;
   line_total: number;
+}
+
+export interface StockItem {
+  id: number;
+  name: string;
+  sku: string;
+  quantity: number;
+  unit: string;
+  min_stock: number;
+  price_per_unit: string;
+  supplier: string;
+}
+
+export interface StockTransaction {
+  id: number;
+  item: number;
+  item_name: string;
+  transaction_type: "in" | "out" | "adjustment";
+  quantity: number;
+  notes: string;
+  created_at: string;
+}
+
+export interface ForecastPoint {
+  date: string;
+  revenue: number;
+  forecast: number;
+}
+
+export interface PeakHour {
+  hour: number;
+  count: number;
+}
+
+export interface ServiceDemand {
+  name: string;
+  count: number;
 }

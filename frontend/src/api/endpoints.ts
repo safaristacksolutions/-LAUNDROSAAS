@@ -1,5 +1,5 @@
 import api from "./client";
-import type { User, Service, Customer, Order, DashboardData, RentHealth } from "../types";
+import type { User, Service, Customer, Order, DashboardData, RentHealth, StockItem, StockTransaction } from "../types";
 
 export const auth = {
   login: (phone: string, password: string) =>
@@ -12,6 +12,9 @@ export const auth = {
 
 export const services = {
   list: () => api.get<Service[]>("/services/"),
+  create: (data: Partial<Service>) => api.post<Service>("/services/", data),
+  update: (id: number, data: Partial<Service>) => api.patch<Service>(`/services/${id}/`, data),
+  delete: (id: number) => api.delete(`/services/${id}/`),
 };
 
 export const customers = {
@@ -40,4 +43,25 @@ export const rent = {
   health: () => api.get<RentHealth>("/rent/reserve/health/"),
   addToReserve: (amount: number) =>
     api.post<RentHealth>("/rent/reserve/add_to_reserve/", { amount }),
+};
+
+export const inventory = {
+  list: (params?: any) => api.get<StockItem[]>("/stock-items/", { params }),
+  create: (data: Partial<StockItem>) => api.post<StockItem>("/stock-items/", data),
+  update: (id: number, data: Partial<StockItem>) => api.patch<StockItem>(`/stock-items/${id}/`, data),
+  delete: (id: number) => api.delete(`/stock-items/${id}/`),
+  lowStock: () => api.get<StockItem[]>("/stock-items/low_stock/"),
+  transactions: (params?: any) => api.get<StockTransaction[]>("/stock-transactions/", { params }),
+};
+
+export const analytics = {
+  dashboard: () => api.get<any>("/analytics/dashboard/"),
+  forecast: (days?: number) => api.get("/analytics/forecast/", { params: { days } }),
+  peakHours: () => api.get("/analytics/peak_hours/"),
+  serviceDemand: () => api.get("/analytics/service_demand/"),
+  churn: () => api.get("/analytics/churn/"),
+};
+
+export const employees = {
+  list: () => api.get<User[]>("/accounts/employees/"),
 };

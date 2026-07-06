@@ -38,6 +38,7 @@ TENANT_APPS = [
     "apps.payments",
     "apps.notifications",
     "apps.rent",
+    "apps.inventory",
 ]
 
 INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
@@ -55,6 +56,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "apps.billing.middleware.PlanEnforcementMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
