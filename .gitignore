@@ -11,21 +11,20 @@ build/
 venv/
 env/
 
-# Django
-backend/staticfiles/
-backend/media/
-backend/.env
-
 # Node
 node_modules/
 frontend/dist/
 frontend/.vite/
+frontend/tsconfig.tsbuildinfo
+frontend/package-lock.json
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+.claude/
+.amazonq/
 
 # OS
 .DS_Store
@@ -33,4 +32,4 @@ Thumbs.db
 *.log
 
 # Build artifacts
-frontend/tsconfig.tsbuildinfo
+*.tsbuildinfo

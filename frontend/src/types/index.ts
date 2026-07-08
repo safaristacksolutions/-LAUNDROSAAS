@@ -6,7 +6,29 @@ export interface User {
   first_name: string;
   last_name: string;
   role: "admin" | "cashier" | "employee" | "superadmin";
+  permissions: string[];
   is_onboarded: boolean;
+}
+
+export interface TenantConfig {
+  id: number;
+  name: string;
+  slug: string;
+  logo_url: string;
+  primary_color: string;
+  secondary_color: string;
+  currency: string;
+  tax_rate: number;
+  plan: "starter" | "pro" | "enterprise";
+}
+
+export interface Branch {
+  id: number;
+  name: string;
+  slug: string;
+  address: string;
+  phone: string;
+  is_main: boolean;
 }
 
 export interface Service {
@@ -34,22 +56,14 @@ export interface OrderItem {
   id?: number;
   service: number;
   service_name?: string;
-  service_icon?: string;
   quantity_kg?: number | null;
   quantity_items?: number | null;
   line_total_kes: number;
 }
 
-export interface OrderItemCount {
-  shirts: number;
-  trousers: number;
-  dresses: number;
-  bedsheets: number;
-  jackets: number;
-  other: number;
-  total_items: number;
-  photo?: string | null;
-}
+export type OrderStatus =
+  | "pending" | "received" | "sorting" | "washing" | "drying"
+  | "ironing" | "packaging" | "ready" | "delivered" | "cancelled";
 
 export interface Order {
   id: number;
@@ -68,47 +82,19 @@ export interface Order {
   delivery_notes: string;
   is_paid: boolean;
   items: OrderItem[];
-  item_count?: OrderItemCount;
+  item_count?: { shirts: number; trousers: number; total_items: number; photo?: string };
   created_at: string;
   updated_at: string;
 }
-
-export type OrderStatus =
-  | "pending"
-  | "received"
-  | "washing"
-  | "drying"
-  | "ironing"
-  | "ready"
-  | "delivered"
-  | "cancelled";
 
 export interface Payment {
   id: number;
   order: number;
   method: "cash" | "mpesa" | "stripe";
   amount: string;
-  state: PaymentState;
+  state: "initiated" | "pending" | "processing" | "completed" | "failed" | "refunded";
   mpesa_receipt: string;
   paid_at: string | null;
-}
-
-export type PaymentState =
-  | "initiated"
-  | "pending"
-  | "processing"
-  | "completed"
-  | "failed"
-  | "refunded";
-
-export interface RentHealth {
-  status: "paid" | "safe" | "warning" | "critical" | "not_setup";
-  message: string;
-  reserve_amount: number;
-  monthly_rent: number;
-  days_until_due: number;
-  projected: number | null;
-  reserve_percent: number;
 }
 
 export interface DashboardData {
@@ -120,11 +106,14 @@ export interface DashboardData {
   pending_payments: number;
 }
 
-export interface CartItem {
-  service: Service;
-  quantity_kg?: number;
-  quantity_items?: number;
-  line_total: number;
+export interface RentHealth {
+  status: "paid" | "safe" | "warning" | "critical" | "not_setup";
+  message: string;
+  reserve_amount: number;
+  monthly_rent: number;
+  days_until_due: number;
+  projected: number | null;
+  reserve_percent: number;
 }
 
 export interface StockItem {
@@ -138,28 +127,10 @@ export interface StockItem {
   supplier: string;
 }
 
-export interface StockTransaction {
-  id: number;
-  item: number;
-  item_name: string;
-  transaction_type: "in" | "out" | "adjustment";
-  quantity: number;
-  notes: string;
-  created_at: string;
-}
-
-export interface ForecastPoint {
-  date: string;
-  revenue: number;
-  forecast: number;
-}
-
-export interface PeakHour {
-  hour: number;
-  count: number;
-}
-
-export interface ServiceDemand {
+export interface WorkflowStage {
   name: string;
-  count: number;
+  label: string;
+  timestamp: string | null;
+  by: string | null;
+  status: "done" | "active" | "pending";
 }
