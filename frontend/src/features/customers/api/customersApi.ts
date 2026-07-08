@@ -1,5 +1,3 @@
-import apiClient from "../../../api/axios";
+import { customerApi } from "../../../api/customer.api";
 
-export const customersApi = {
-  list: (params?: Record<string, unknown>) => apiClient.get("/api/customers/", { params }),
-};
+export const customersApi = customerApi;

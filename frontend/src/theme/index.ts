@@ -11,16 +11,46 @@ export function createAppTheme(brand: BrandTokens, mode: "light" | "dark") {
     typography: {
       fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
     },
-    shape: { borderRadius: 12 },
+    shape: { borderRadius: 16 },
     components: {
       MuiButton: {
         styleOverrides: {
-          root: { textTransform: "none", fontWeight: 600 },
+          root: {
+            textTransform: "none",
+            fontWeight: 600,
+            borderRadius: 28,
+            padding: "10px 24px",
+          },
         },
       },
       MuiCard: {
         styleOverrides: {
-          root: { boxShadow: "0 1px 3px rgba(0,0,0,0.08)" },
+          root: {
+            borderRadius: 20,
+            boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+            transition: "transform 0.2s ease, box-shadow 0.2s ease",
+            "&:hover": {
+              transform: "translateY(-2px)",
+              boxShadow: "0 8px 30px rgba(0,0,0,0.10)",
+            },
+          },
+        },
+      },
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            borderRadius: 20,
+          },
+        },
+      },
+      MuiChip: {
+        styleOverrides: {
+          root: { borderRadius: 20 },
+        },
+      },
+      MuiDialog: {
+        styleOverrides: {
+          paper: { borderRadius: 24 },
         },
       },
     },

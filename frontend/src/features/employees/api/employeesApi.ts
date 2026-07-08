@@ -1,5 +1,3 @@
-import apiClient from "../../../api/axios";
+import { employeeApi } from "../../../api/employee.api";
 
-export const employeesApi = {
-  list: () => apiClient.get("/api/employees/"),
-};
+export const employeesApi = employeeApi;

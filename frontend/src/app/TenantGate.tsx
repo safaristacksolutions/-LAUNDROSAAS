@@ -44,7 +44,7 @@ export function TenantGate() {
     return (
       <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100vh" gap={2}>
         <CircularProgress />
-        <Typography variant="body2" color="text.secondary">Loading LaundryOS...</Typography>
+        <Typography variant="body2" color="text.secondary">Loading EasyWash...</Typography>
       </Box>
     );
   }

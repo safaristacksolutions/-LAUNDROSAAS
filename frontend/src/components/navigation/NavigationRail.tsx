@@ -29,7 +29,8 @@ const secondaryNav: NavItem[] = [
   { label: "Inventory", path: "/inventory", icon: "\uE8B9" },
   { label: "Employees", path: "/employees", icon: "\uEA67" },
   { label: "Reports", path: "/reports", icon: "\uE932" },
-  { label: "Settings", path: "/settings", icon: "\uE8B8" },
+  { label: "Billing", path: "/billing", icon: "\uE227" },
+  { label: "Analytics", path: "/analytics", icon: "\uE80C" },
 ];
 
 export function NavigationRail() {
@@ -58,8 +59,8 @@ export function NavigationRail() {
             sx={{
               width: 32,
               height: 32,
-              borderRadius: 1,
-              bgcolor: "primary.main",
+              borderRadius: 2,
+              background: "linear-gradient(135deg, #1976D2, #9C27B0)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -68,10 +69,10 @@ export function NavigationRail() {
               fontWeight: 700,
             }}
           >
-            {tenant?.name?.[0] ?? "L"}
+            {tenant?.name?.[0] ?? "E"}
           </Box>
           <Typography variant="subtitle1" fontWeight={700} noWrap>
-            {tenant?.name ?? "LaundryOS"}
+            {tenant?.name ?? "EasyWash"}
           </Typography>
         </Box>
       </Toolbar>

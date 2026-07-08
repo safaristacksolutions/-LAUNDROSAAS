@@ -2,7 +2,6 @@ import { lazy } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { AuthLayout } from "../layouts/AuthLayout";
 import { DashboardLayout } from "../layouts/DashboardLayout";
-import { MinimalLayout } from "../layouts/MinimalLayout";
 import { TenantGate } from "../app/TenantGate";
 
 const LoginPage = lazy(() => import("../features/authentication/pages/LoginPage"));
@@ -14,6 +13,8 @@ const LaundryPage = lazy(() => import("../features/laundry/pages/LaundryPage"));
 const InventoryPage = lazy(() => import("../features/inventory/pages/InventoryPage"));
 const EmployeesPage = lazy(() => import("../features/employees/pages/EmployeesPage"));
 const ReportsPage = lazy(() => import("../features/reports/pages/ReportsPage"));
+const BillingPage = lazy(() => import("../features/billing/pages/BillingPage"));
+const AnalyticsPage = lazy(() => import("../features/analytics/pages/AnalyticsPage"));
 
 export const router = createBrowserRouter([
   {
@@ -37,6 +38,8 @@ export const router = createBrowserRouter([
           { path: "inventory", element: <InventoryPage /> },
           { path: "employees", element: <EmployeesPage /> },
           { path: "reports", element: <ReportsPage /> },
+          { path: "billing", element: <BillingPage /> },
+          { path: "analytics", element: <AnalyticsPage /> },
         ],
       },
     ],

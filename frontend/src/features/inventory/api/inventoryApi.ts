@@ -1,5 +1,3 @@
-import apiClient from "../../../api/axios";
+import { inventoryApi as centralizedInventoryApi } from "../../../api/inventory.api";
 
-export const inventoryApi = {
-  list: () => apiClient.get("/api/inventory/"),
-};
+export const inventoryApi = centralizedInventoryApi;

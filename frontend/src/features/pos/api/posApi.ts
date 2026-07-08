@@ -1,18 +1,17 @@
-import apiClient from "../../../api/axios";
+import { customerApi } from "../../../api/customer.api";
+import { serviceApi } from "../../../api/service.api";
+import { orderApi } from "../../../api/order.api";
+import { paymentApi } from "../../../api/payment.api";
 
 export const posApi = {
   searchCustomers: (phone: string) =>
-    apiClient.get("/api/customers/", { params: { search: phone } }),
-
+    customerApi.list({ search: phone }),
   getServices: () =>
-    apiClient.get("/api/services/"),
-
+    serviceApi.list(),
   createOrder: (data: Record<string, unknown>) =>
-    apiClient.post("/api/orders/", data),
-
-  initiateSTK: (orderId: number, phone: string) =>
-    apiClient.post("/api/payments/mpesa/stk/", { order_id: orderId, phone }),
-
+    orderApi.create(data),
+  initiateSTK: (orderId: number, phone: string, amount: number) =>
+    paymentApi.stkPush(orderId, phone, amount),
   checkPayment: (checkoutId: string) =>
-    apiClient.get(`/api/payments/mpesa/status/${checkoutId}/`),
+    paymentApi.status(checkoutId),
 };

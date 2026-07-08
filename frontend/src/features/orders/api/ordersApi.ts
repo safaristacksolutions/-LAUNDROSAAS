@@ -1,7 +1,3 @@
-import apiClient from "../../../api/axios";
+import { orderApi as centralizedOrderApi } from "../../../api/order.api";
 
-export const ordersApi = {
-  list: (params?: Record<string, unknown>) => apiClient.get("/api/orders/", { params }),
-  get: (id: number) => apiClient.get(`/api/orders/${id}/`),
-  updateStatus: (id: number, status: string) => apiClient.put(`/api/orders/${id}/status/`, { status }),
-};
+export const ordersApi = centralizedOrderApi;
