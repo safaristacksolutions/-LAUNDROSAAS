@@ -27,11 +27,11 @@ export function DataTable<T extends { id?: number }>({
 }: DataTableProps<T>) {
   if (loading) {
     return (
-      <TableContainer component={Paper} variant="outlined">
+      <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 3, overflow: "hidden" }}>
         <Table>
           <TableHead>
             <TableRow>
-              {columns.map((col) => <TableCell key={col.key} sx={{ width: col.width }}>{col.label}</TableCell>)}
+              {columns.map((col) => <TableCell key={col.key} sx={{ width: col.width, fontWeight: 700 }}>{col.label}</TableCell>)}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -47,30 +47,40 @@ export function DataTable<T extends { id?: number }>({
   }
 
   return (
-    <TableContainer component={Paper} variant="outlined">
+    <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 3, overflow: "hidden" }}>
       <Table>
         <TableHead>
-          <TableRow>
+          <TableRow sx={{ bgcolor: "grey.50" }}>
             {columns.map((col) => (
-              <TableCell key={col.key} sx={{ width: col.width, fontWeight: 600 }}>{col.label}</TableCell>
+              <TableCell key={col.key} sx={{ width: col.width, fontWeight: 700, fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: 0.5, color: "text.secondary" }}>
+                {col.label}
+              </TableCell>
             ))}
           </TableRow>
         </TableHead>
         <TableBody>
           {data.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={columns.length} align="center" sx={{ py: 6 }}>
+              <TableCell colSpan={columns.length} align="center" sx={{ py: 8 }}>
                 <Box color="text.secondary">No data found</Box>
               </TableCell>
             </TableRow>
           ) : (
             data.map((row, i) => (
               <TableRow
-                key={(row.id as number) ?? i} hover
+                key={(row.id as number) ?? i}
+                hover
                 onClick={() => onRowClick?.(row)}
-                sx={{ cursor: onRowClick ? "pointer" : undefined }}
+                sx={{
+                  cursor: onRowClick ? "pointer" : undefined,
+                  "&:hover": { bgcolor: "action.hover" },
+                  "&:last-child td": { border: 0 },
+                  transition: "background-color 0.15s ease",
+                }}
               >
-                {columns.map((col) => <TableCell key={col.key}>{col.render(row)}</TableCell>)}
+                {columns.map((col) => (
+                  <TableCell key={col.key} sx={{ py: 1.5 }}>{col.render(row)}</TableCell>
+                ))}
               </TableRow>
             ))
           )}

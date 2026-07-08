@@ -9,10 +9,12 @@ import MenuItem from "@mui/material/MenuItem";
 import Avatar from "@mui/material/Avatar";
 import { useState } from "react";
 import { useAuthStore } from "../../store/authStore";
+import { useTenantStore } from "../../store/tenantStore";
 
 export function TopBar() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const tenant = useTenantStore((s) => s.config);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   if (!user) return null;
@@ -26,22 +28,49 @@ export function TopBar() {
         zIndex: (t) => t.zIndex.drawer + 1,
         borderBottom: "1px solid",
         borderColor: "divider",
+        backdropFilter: "blur(12px)",
+        bgcolor: "rgba(255,255,255,0.85)",
       }}
     >
       <Toolbar>
+        <Typography variant="body2" color="text.secondary" sx={{ mr: 2 }}>
+          {new Date().toLocaleDateString("en-KE", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
+        </Typography>
         <Box flex={1} />
-        <Typography variant="body2" color="text.secondary" mr={2}>
+        <Chip
+          label={user.role}
+          size="small"
+          sx={{
+            mr: 1.5, textTransform: "capitalize", borderRadius: 2,
+            bgcolor: `${tenant?.primary_color || "#1976D2"}15`,
+            color: tenant?.primary_color || "#1976D2",
+            fontWeight: 600,
+          }}
+        />
+        <Typography variant="body2" fontWeight={500} mr={1.5}>
           {user.first_name || user.username}
         </Typography>
-        <Chip label={user.role} size="small" sx={{ mr: 1, textTransform: "capitalize" }} />
         <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
-          <Avatar sx={{ width: 32, height: 32, bgcolor: "primary.main", fontSize: 14 }}>
+          <Avatar
+            sx={{ width: 34, height: 34, bgcolor: "primary.main", fontSize: 14, fontWeight: 600 }}
+          >
             {(user.first_name?.[0] ?? user.username[0]).toUpperCase()}
           </Avatar>
         </IconButton>
-        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
-          <MenuItem disabled>{user.first_name} {user.last_name}</MenuItem>
-          <MenuItem onClick={() => { setAnchorEl(null); logout(); }}>Logout</MenuItem>
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={() => setAnchorEl(null)}
+          slotProps={{ paper: { sx: { borderRadius: 3, mt: 1 } } }}
+        >
+          <MenuItem disabled dense>
+            <Typography variant="body2" fontWeight={600}>
+              {user.first_name} {user.last_name}
+            </Typography>
+          </MenuItem>
+          <MenuItem onClick={() => { setAnchorEl(null); logout(); }} dense>
+            Logout
+          </MenuItem>
         </Menu>
       </Toolbar>
     </AppBar>
