@@ -9,23 +9,27 @@ import Alert from "@mui/material/Alert";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import CircularProgress from "@mui/material/CircularProgress";
+import Chip from "@mui/material/Chip";
 import { loginSchema, type LoginFormData } from "../validation/loginSchema";
 import { useAuthStore } from "../../../store/authStore";
 import { useTenantStore } from "../../../store/tenantStore";
 import { useBranchStore } from "../../../store/branchStore";
 import { tenantApi } from "../../../api/tenant.api";
 import { PasswordField } from "../../../components/forms/PasswordField";
+import { DEMO_MODE, MOCK_TENANT, MOCK_BRANCHES } from "../../../config/demoMode";
 
 const LAUNDRY_BG = "https://images.unsplash.com/photo-1582735689369-4fe89db7114c?w=1400&q=80";
 
 export function LoginForm() {
   const login = useAuthStore((s) => s.login);
+  const demoLogin = useAuthStore((s) => s.demoLogin);
   const setConfig = useTenantStore((s) => s.setConfig);
   const setBranches = useBranchStore((s) => s.setBranches);
   const setBranch = useAuthStore((s) => s.setBranch);
   const setLoading = useAuthStore((s) => s.setLoading);
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const [demoLoading, setDemoLoading] = useState(false);
 
   const {
     register,
@@ -39,6 +43,14 @@ export function LoginForm() {
     setError(null);
     try {
       await login(data.phone, data.password);
+      if (DEMO_MODE) {
+        setConfig(MOCK_TENANT);
+        setBranches(MOCK_BRANCHES);
+        setBranch(MOCK_BRANCHES[0].id);
+        setLoading(false);
+        navigate("/pos", { replace: true });
+        return;
+      }
       const { data: tenantData } = await tenantApi.config();
       setConfig(tenantData);
       const { data: branches } = await tenantApi.branches();
@@ -49,6 +61,23 @@ export function LoginForm() {
     } catch (err: unknown) {
       const e = err as { response?: { data?: { detail?: string } } };
       setError(e?.response?.data?.detail ?? "Login failed. Check your credentials.");
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    setDemoLoading(true);
+    setError(null);
+    try {
+      await demoLogin();
+      setConfig(MOCK_TENANT);
+      setBranches(MOCK_BRANCHES);
+      setBranch(MOCK_BRANCHES[0].id);
+      setLoading(false);
+      navigate("/pos", { replace: true });
+    } catch {
+      setError("Demo login failed");
+    } finally {
+      setDemoLoading(false);
     }
   };
 
@@ -181,6 +210,12 @@ export function LoginForm() {
             </Typography>
           </Box>
 
+          {DEMO_MODE && (
+            <Alert severity="info" sx={{ mb: 2, borderRadius: 2, fontSize: "0.8rem" }}>
+              Demo mode active. Sign in or use the quick demo button below.
+            </Alert>
+          )}
+
           <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
             {error && (
               <Alert
@@ -239,7 +274,7 @@ export function LoginForm() {
                 py: 1.5,
                 fontSize: 15,
                 borderRadius: 28,
-                mb: 2.5,
+                mb: 1.5,
                 background: "linear-gradient(135deg, #4F46E5 0%, #0EA5E9 100%)",
                 "&:hover": {
                   background: "linear-gradient(135deg, #4338CA 0%, #0284C7 100%)",
@@ -249,6 +284,31 @@ export function LoginForm() {
             >
               {isSubmitting ? "Signing in..." : "Sign In"}
             </Button>
+
+            {DEMO_MODE && (
+              <Button
+                fullWidth
+                variant="outlined"
+                size="large"
+                disabled={demoLoading}
+                onClick={handleDemoLogin}
+                endIcon={demoLoading ? <CircularProgress size={18} /> : null}
+                sx={{
+                  py: 1.5,
+                  fontSize: 14,
+                  borderRadius: 28,
+                  mb: 2.5,
+                  borderColor: "rgba(255,255,255,0.25)",
+                  color: "rgba(255,255,255,0.8)",
+                  "&:hover": {
+                    borderColor: "#4F46E5",
+                    bgcolor: "rgba(79,70,229,0.1)",
+                  },
+                }}
+              >
+                {demoLoading ? "Loading demo..." : "Demo Login (instant access)"}
+              </Button>
+            )}
 
             <Typography
               variant="body2"

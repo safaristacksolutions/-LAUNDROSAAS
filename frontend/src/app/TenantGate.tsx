@@ -5,6 +5,7 @@ import { useTenantStore } from "../store/tenantStore";
 import { useBranchStore } from "../store/branchStore";
 import { tenantApi } from "../api/tenant.api";
 import { SplashScreen } from "../components/loading/SplashScreen";
+import { DEMO_MODE, MOCK_TENANT, MOCK_BRANCHES } from "../config/demoMode";
 
 export function TenantGate() {
   const navigate = useNavigate();
@@ -24,6 +25,14 @@ export function TenantGate() {
       }
       try {
         await loadUser();
+        if (DEMO_MODE) {
+          setConfig(MOCK_TENANT);
+          setBranches(MOCK_BRANCHES);
+          setBranch(MOCK_BRANCHES[0].id);
+          setLoading(false);
+          setReady(true);
+          return;
+        }
         const { data: tenantData } = await tenantApi.config();
         setConfig(tenantData);
         const { data: branches } = await tenantApi.branches();

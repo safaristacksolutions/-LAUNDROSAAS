@@ -11,9 +11,10 @@ import Paper from "@mui/material/Paper";
 import CircularProgress from "@mui/material/CircularProgress";
 import Grid from "@mui/material/Grid2";
 import { registerSchema, type RegisterFormData } from "../validation/registerSchema";
-import { authApi } from "../../../api/auth.api";
+import { useAuthStore } from "../../../store/authStore";
 import { PasswordStrength } from "./PasswordStrength";
 import { PasswordField } from "../../../components/forms/PasswordField";
+import { DEMO_MODE } from "../../../config/demoMode";
 
 const LAUNDRY_BG = "https://images.unsplash.com/photo-1545173168-9f1947eebb7f?w=1400&q=80";
 
@@ -33,17 +34,13 @@ export function RegisterForm() {
 
   const watchedPassword = useWatch({ control, name: "password", defaultValue: "" });
 
+  const doRegister = useAuthStore((s) => s.register);
+
   const onSubmit = async (data: RegisterFormData) => {
     setError(null);
     setSuccess(null);
     try {
-      await authApi.register({
-        full_name: data.full_name,
-        phone: data.phone,
-        email: data.email,
-        password: data.password,
-        address: data.address,
-      });
+      await doRegister(data.full_name, data.phone, data.email, data.password, data.address);
       setSuccess("Account created! Redirecting to login...");
       setTimeout(() => navigate("/login"), 2000);
     } catch (err: unknown) {
@@ -187,6 +184,12 @@ export function RegisterForm() {
               Set up your EasyWash account
             </Typography>
           </Box>
+
+          {DEMO_MODE && (
+            <Alert severity="info" sx={{ mb: 2, borderRadius: 2, fontSize: "0.8rem" }}>
+              Demo mode — registration works instantly with any data.
+            </Alert>
+          )}
 
           <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
             {error && (
