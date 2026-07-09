@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import Box from "@mui/material/Box";
-import CircularProgress from "@mui/material/CircularProgress";
-import Typography from "@mui/material/Typography";
 import { useAuthStore } from "../store/authStore";
 import { useTenantStore } from "../store/tenantStore";
 import { useBranchStore } from "../store/branchStore";
 import { tenantApi } from "../api/tenant.api";
+import { SplashScreen } from "../components/loading/SplashScreen";
 
 export function TenantGate() {
   const navigate = useNavigate();
@@ -41,12 +39,7 @@ export function TenantGate() {
   }, []);
 
   if (!ready) {
-    return (
-      <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100vh" gap={2}>
-        <CircularProgress />
-        <Typography variant="body2" color="text.secondary">Loading EasyWash...</Typography>
-      </Box>
-    );
+    return <SplashScreen />;
   }
 
   return <Outlet />;

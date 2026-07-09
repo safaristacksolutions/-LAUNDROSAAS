@@ -30,25 +30,26 @@ export function WorkflowTimeline({ orderId, currentStatus }: WorkflowTimelinePro
 
   return (
     <Box>
-      <Stepper activeStep={currentIdx} alternativeLabel>
-        {activeSteps.map((step) => (
-          <Step key={step}>
-            <StepLabel>{STATUS_LABELS[step]}</StepLabel>
-          </Step>
-        ))}
-      </Stepper>
-      {nextStatus && (
-        <Box textAlign="center" mt={2}>
-          <Button
-            variant="contained"
-            size="small"
-            onClick={() => mutation.mutate(nextStatus)}
-            disabled={mutation.isPending}
-          >
-            Mark {STATUS_LABELS[nextStatus]}
-          </Button>
-        </Box>
-      )}
+       <Stepper activeStep={currentIdx} alternativeLabel>
+         {ORDER_STATUS_FLOW.map((step) => (
+           <Step key={step} completed={currentIdx > ORDER_STATUS_FLOW.indexOf(step)}>
+             <StepLabel>{STATUS_LABELS[step]}</StepLabel>
+           </Step>
+         ))}
+       </Stepper>
+       {nextStatus && (
+         <Box textAlign="center" mt={2}>
+           <Button
+             variant="contained"
+             size="small"
+             onClick={() => mutation.mutate(nextStatus)}
+             disabled={mutation.isPending}
+             sx={{ borderRadius: 28 }}
+           >
+             Mark {STATUS_LABELS[nextStatus]}
+           </Button>
+         </Box>
+       )}
     </Box>
   );
 }

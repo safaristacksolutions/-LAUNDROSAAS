@@ -9,6 +9,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (phone: string, password: string) => Promise<void>;
+  register: (fullName: string, phone: string, email: string, password: string, address?: string) => Promise<void>;
   setToken: (token: string) => void;
   setBranch: (id: number) => void;
   setLoading: (v: boolean) => void;
@@ -32,6 +33,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       isAuthenticated: true,
       isLoading: false,
     });
+  },
+
+  register: async (fullName, phone, email, password, address) => {
+    await authApi.register({ full_name: fullName, phone, email, password, address });
   },
 
   setToken: (token) => set({ token }),

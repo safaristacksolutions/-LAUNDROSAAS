@@ -13,7 +13,16 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
+import Tooltip from "@mui/material/Tooltip";
+import Paper from "@mui/material/Paper";
+import Chip from "@mui/material/Chip";
+import CircularProgress from "@mui/material/CircularProgress";
+import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
+import ClearAllIcon from "@mui/icons-material/ClearAll";
 import { useTransactionEngine } from "../store/transactionStore";
+import { useTenantStore } from "../../../store/tenantStore";
 import { formatKES } from "../../../utilities/formatters";
 import { posApi } from "../api/posApi";
 
@@ -31,10 +40,16 @@ export function CartPane() {
   const calculateTotal = useTransactionEngine((s) => s.calculateTotal);
   const taxRate = useTransactionEngine((s) => s.taxRate);
   const clearTransaction = useTransactionEngine((s) => s.clearTransaction);
+  const pickupDate = useTransactionEngine((s) => s.pickupDate);
+  const deliveryDate = useTransactionEngine((s) => s.deliveryDate);
+  const setPickupDate = useTransactionEngine((s) => s.setPickupDate);
+  const setDeliveryDate = useTransactionEngine((s) => s.setDeliveryDate);
+  const tenant = useTenantStore((s) => s.config);
 
   const [paymentMode, setPaymentMode] = useState<"idle" | "mpesa" | "cash">("idle");
   const [error, setError] = useState<string | null>(null);
   const [receiptOpen, setReceiptOpen] = useState(false);
+  const [lastTotal, setLastTotal] = useState(0);
 
   const subtotal = calculateSubtotal();
   const tax = subtotal * taxRate;
@@ -45,20 +60,29 @@ export function CartPane() {
     setPaymentMode("mpesa");
     setError(null);
     try {
+      const st = calculateSubtotal();
+      const tx = st * taxRate;
+      const orderTotal = Math.max(0, (st - discount) + tx);
       const orderData = {
         customer: customer.id,
+        cashier: customer.id,
         payment_method: "mpesa",
         items: cart.map((item) => ({
           service: item.serviceId,
-          quantity: item.unit === "item" ? item.weightOrQty : undefined,
-          weight_kg: item.unit === "kg" ? item.weightOrQty : undefined,
-          line_total: item.lineTotal,
+          quantity: item.unit !== "kg" ? item.quantity : null,
+          weight_kg: item.unit === "kg" ? item.weight_kg : null,
+          unit_price: item.unit_price,
+          line_total: item.line_total,
         })),
+        subtotal: st,
         discount,
-        total,
+        tax: tx,
+        total: orderTotal,
+        pickup_date: pickupDate,
+        delivery_date: deliveryDate,
       };
       const { data: order } = await posApi.createOrder(orderData);
-      const { data: payment } = await posApi.initiateSTK(order.id, customer.phone, total);
+      const { data: payment } = await posApi.initiateSTK(order.id, customer.phone, orderTotal);
       const checkoutId = payment.CheckoutRequestID ?? payment.checkout_request_id;
 
       const poll = setInterval(async () => {
@@ -67,19 +91,23 @@ export function CartPane() {
           if (status.state === "completed" || status.ResultCode === "0") {
             clearInterval(poll);
             setPaymentMode("idle");
+            setLastTotal(orderTotal);
             setReceiptOpen(true);
             clearTransaction();
-          } else if (status.state === "failed" || status.ResultCode !== "0") {
+          } else if (status.state === "failed" || (status.ResultCode && status.ResultCode !== "0")) {
             clearInterval(poll);
             setPaymentMode("idle");
             setError("Payment failed. Please retry.");
           }
-        } catch { /* poll */ }
+        } catch {
+          /* poll silently */
+        }
       }, STK_POLL_INTERVAL_MS);
       setTimeout(() => clearInterval(poll), STK_TIMEOUT_MS);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string } } };
       setPaymentMode("idle");
-      setError(err?.response?.data?.detail ?? "Payment initiation failed");
+      setError(e?.response?.data?.detail ?? "Payment initiation failed");
     }
   };
 
@@ -87,149 +115,376 @@ export function CartPane() {
     if (!customer || cart.length === 0) return;
     setPaymentMode("cash");
     try {
+      const st = calculateSubtotal();
+      const tx = st * taxRate;
+      const orderTotal = Math.max(0, (st - discount) + tx);
       await posApi.createOrder({
         customer: customer.id,
+        cashier: customer.id,
         payment_method: "cash",
         items: cart.map((item) => ({
           service: item.serviceId,
-          quantity: item.unit === "item" ? item.weightOrQty : undefined,
-          weight_kg: item.unit === "kg" ? item.weightOrQty : undefined,
-          line_total: item.lineTotal,
+          quantity: item.unit !== "kg" ? item.quantity : null,
+          weight_kg: item.unit === "kg" ? item.weight_kg : null,
+          unit_price: item.unit_price,
+          line_total: item.line_total,
         })),
+        subtotal: st,
         discount,
-        total,
+        tax: tx,
+        total: orderTotal,
+        pickup_date: pickupDate,
+        delivery_date: deliveryDate,
       });
       setPaymentMode("idle");
+      setLastTotal(orderTotal);
       setReceiptOpen(true);
       clearTransaction();
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string } } };
       setPaymentMode("idle");
-      setError(err?.response?.data?.detail ?? "Order creation failed");
+      setError(e?.response?.data?.detail ?? "Order creation failed");
     }
   };
 
   return (
     <Box display="flex" flexDirection="column" height="100%">
-      <Typography variant="subtitle2" fontWeight={600} mb={1} color="text.secondary">
-        {cart.length} item{cart.length !== 1 ? "s" : ""}
-      </Typography>
-
-      <Box flex={1} sx={{ overflowY: "auto" }}>
-        <List dense disablePadding>
-          {cart.map((item) => (
-            <ListItem
-              key={item.id}
-              secondaryAction={
-                <IconButton edge="end" size="small" onClick={() => removeItem(item.id)} sx={{ color: "error.light" }}>
-                  <Box component="span" sx={{ fontSize: 18, fontFamily: '"Material Icons"' }}>&#xE872;</Box>
-                </IconButton>
-              }
-              sx={{ px: 0, borderRadius: 2, "&:hover": { bgcolor: "action.hover" } }}
-            >
-              <Stack direction="row" alignItems="center" spacing={1} width="100%">
-                <Box
-                  sx={{
-                    width: 36, height: 36, borderRadius: 2,
-                    background: `url(https://images.unsplash.com/photo-1545173168-9f1947eebb7f?w=50&q=60) center/cover`,
-                  }}
-                />
-                <Box flex={1}>
-                  <Typography variant="body2" fontWeight={500}>{item.serviceName}</Typography>
-                  <Stack direction="row" alignItems="center" spacing={0.5} mt={0.3}>
-                    <IconButton
-                      size="small"
-                      onClick={() => updateQty(item.id, Math.max(0.5, item.weightOrQty - (item.unit === "kg" ? 0.5 : 1)))}
-                      sx={{ width: 22, height: 22, bgcolor: "grey.100", "&:hover": { bgcolor: "grey.200" } }}
-                    >
-                      <Box component="span" sx={{ fontSize: 12, fontFamily: '"Material Icons"' }}>&#xE15B;</Box>
-                    </IconButton>
-                    <Typography variant="caption" fontWeight={700} sx={{ minWidth: 32, textAlign: "center" }}>
-                      {item.weightOrQty}{item.unit === "kg" ? "kg" : "x"}
-                    </Typography>
-                    <IconButton
-                      size="small"
-                      onClick={() => updateQty(item.id, item.weightOrQty + (item.unit === "kg" ? 0.5 : 1))}
-                      sx={{ width: 22, height: 22, bgcolor: "grey.100", "&:hover": { bgcolor: "grey.200" } }}
-                    >
-                      <Box component="span" sx={{ fontSize: 12, fontFamily: '"Material Icons"' }}>&#xE145;</Box>
-                    </IconButton>
-                  </Stack>
-                </Box>
-                <Typography variant="body2" fontWeight={700}>{formatKES(item.lineTotal)}</Typography>
-              </Stack>
-            </ListItem>
-          ))}
-        </List>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Box component="span" sx={{ fontSize: 20, color: tenant?.primary_color || "#1976D2" }}>🛒</Box>
+          <Typography variant="subtitle1" fontWeight={700} color="text.primary">
+            {cart.length} item{cart.length !== 1 ? "s" : ""}
+          </Typography>
+        </Box>
+        {cart.length > 0 && (
+          <Chip
+            label={formatKES(total)}
+            size="small"
+            sx={{
+              background: `${tenant?.primary_color || '#1976D2'}10`,
+              color: tenant?.primary_color || "#1976D2",
+              fontWeight: 700,
+              height: 24,
+            }}
+          />
+        )}
       </Box>
 
-      <Divider sx={{ my: 1.5 }} />
+      <Box flex={1} sx={{ overflowY: "auto" }}>
+        {cart.length === 0 ? (
+          <Paper
+            variant="outlined"
+            sx={{
+              p: 4,
+              textAlign: "center",
+              borderRadius: 3,
+              borderStyle: "dashed",
+              borderColor: "rgba(0,0,0,0.1)",
+            }}
+          >
+            <Box component="span" sx={{ fontSize: 48, color: "text.disabled", mb: 1 }}>🛒</Box>
+            <Typography variant="body2" color="text.secondary">
+              Cart is empty
+            </Typography>
+            <Typography variant="caption" color="text.disabled">
+              Add services to begin
+            </Typography>
+          </Paper>
+        ) : (
+          <List dense disablePadding>
+            {cart.map((item) => {
+              const currentQty = item.unit === "kg" ? (item.weight_kg ?? 0) : (item.quantity ?? 0);
+              const step = item.unit === "kg" ? 0.5 : 1;
 
-      <Stack spacing={1} px={0}>
+              return (
+                <Paper
+                  key={item.id}
+                  variant="outlined"
+                  sx={{
+                    mb: 1.5,
+                    borderRadius: 3,
+                    border: "1px solid rgba(0,0,0,0.06)",
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                      borderColor: tenant?.primary_color || "#1976D2",
+                    },
+                  }}
+                >
+                  <Stack direction="row" alignItems="center" spacing={1.5} p={1.5}>
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 2,
+                        background:
+                          "url(https://images.unsplash.com/photo-1582735689369-4fe89db7114c?w=100&q=80) center/cover",
+                        flexShrink: 0,
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                      }}
+                    />
+                    <Box flex={1} minWidth={0}>
+                      <Typography variant="body2" fontWeight={700} noWrap>
+                        {item.serviceName}
+                      </Typography>
+                      <Stack direction="row" alignItems="center" spacing={0.5} mt={0.5}>
+                        <IconButton
+                          size="small"
+                          onClick={() => updateQty(item.id, Math.max(step, currentQty - step))}
+                          sx={{ 
+                            width: 24, 
+                            height: 24, 
+                            bgcolor: `${tenant?.primary_color || '#1976D2'}10`,
+                            color: tenant?.primary_color || "#1976D2",
+                            "&:hover": { bgcolor: `${tenant?.primary_color || '#1976D2'}20` } 
+                          }}
+                        >
+                          <RemoveIcon sx={{ fontSize: 14 }} />
+                        </IconButton>
+                        <Typography
+                          variant="caption"
+                          fontWeight={700}
+                          sx={{ minWidth: 40, textAlign: "center", fontSize: "0.85rem" }}
+                        >
+                          {currentQty}
+                          {item.unit === "kg" ? "kg" : item.unit === "flat" ? "" : "×"}
+                        </Typography>
+                        <IconButton
+                          size="small"
+                          onClick={() => updateQty(item.id, currentQty + step)}
+                          sx={{ 
+                            width: 24, 
+                            height: 24, 
+                            bgcolor: `${tenant?.primary_color || '#1976D2'}10`,
+                            color: tenant?.primary_color || "#1976D2",
+                            "&:hover": { bgcolor: `${tenant?.primary_color || '#1976D2'}20` } 
+                          }}
+                        >
+                          <AddIcon sx={{ fontSize: 14 }} />
+                        </IconButton>
+                      </Stack>
+                    </Box>
+                    <Box sx={{ textAlign: "right" }}>
+                      <Typography variant="body2" fontWeight={800} sx={{ whiteSpace: "nowrap" }}>
+                        {formatKES(item.line_total)}
+                      </Typography>
+                    </Box>
+                    <Tooltip title="Remove">
+                      <IconButton
+                        size="small"
+                        onClick={() => removeItem(item.id)}
+                        sx={{ 
+                          color: "error.main", 
+                          "&:hover": { bgcolor: "error.50" } 
+                        }}
+                      >
+                        <DeleteIcon sx={{ fontSize: 18 }} />
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
+                </Paper>
+              );
+            })}
+          </List>
+        )}
+      </Box>
+
+      <Divider sx={{ my: 2 }} />
+
+      <Stack spacing={1.5}>
         <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Typography variant="body2" color="text.secondary">Subtotal</Typography>
+          <Typography variant="body2" color="text.secondary" fontWeight={500}>Subtotal</Typography>
           <Typography variant="body2" fontWeight={600}>{formatKES(subtotal)}</Typography>
         </Stack>
         <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Typography variant="body2" color="text.secondary">VAT ({(taxRate * 100).toFixed(0)}%)</Typography>
+          <Typography variant="body2" color="text.secondary" fontWeight={500}>
+            VAT ({(taxRate * 100).toFixed(0)}%)
+          </Typography>
           <Typography variant="body2">{formatKES(tax)}</Typography>
         </Stack>
         <Stack direction="row" justifyContent="space-between" alignItems="center">
           <TextField
             size="small"
-            label="Discount"
+            label="Discount (KES)"
             type="number"
             value={discount}
             onChange={(e) => setDiscount(Number(e.target.value) || 0)}
-            sx={{ width: 120, "& .MuiOutlinedInput-root": { borderRadius: 2, fontSize: 13 } }}
+            sx={{ 
+              width: 140, 
+              "& .MuiOutlinedInput-root": { 
+                borderRadius: 2, 
+                fontSize: 13,
+                "&:hover fieldset": { borderColor: tenant?.primary_color || "#1976D2" },
+                "&.Mui-focused fieldset": { borderColor: tenant?.primary_color || "#1976D2" },
+              } 
+            }}
           />
-          <Typography variant="body2" color="error">-{formatKES(discount)}</Typography>
+          <Typography variant="body2" color="error.main" fontWeight={600}>
+            -{formatKES(discount)}
+          </Typography>
         </Stack>
         <Divider />
         <Stack direction="row" justifyContent="space-between" alignItems="center">
           <Typography variant="subtitle1" fontWeight={800}>Total</Typography>
-          <Typography variant="h5" fontWeight={800} color="primary.main">
+          <Typography 
+            variant="h5" 
+            fontWeight={800} 
+            sx={{ 
+              color: tenant?.primary_color || "#1976D2",
+              background: `linear-gradient(135deg, ${tenant?.primary_color || '#1976D2'}, ${tenant?.secondary_color || '#9C27B0'})`,
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
             {formatKES(total)}
           </Typography>
         </Stack>
       </Stack>
 
-      {error && <Alert severity="error" sx={{ mt: 1, borderRadius: 2, fontSize: 13 }}>{error}</Alert>}
+      {error && (
+        <Alert severity="error" sx={{ mt: 2, borderRadius: 3, fontSize: 13 }} className="shake">
+          {error}
+        </Alert>
+      )}
 
-      <Stack direction="row" spacing={1.5} mt={2}>
-        <Button
-          fullWidth variant="contained" size="large"
-          disabled={!customer || cart.length === 0 || paymentMode !== "idle"}
-          onClick={handleMpesa}
-          sx={{ borderRadius: 3, py: 1.5 }}
-        >
-          {paymentMode === "mpesa" ? "Awaiting Payment..." : "M-PESA"}
-        </Button>
-        <Button
-          fullWidth variant="outlined" size="large"
-          disabled={!customer || cart.length === 0 || paymentMode !== "idle"}
-          onClick={handleCash}
-          sx={{ borderRadius: 3, py: 1.5 }}
-        >
-          {paymentMode === "cash" ? "Processing..." : "CASH"}
-        </Button>
-        <IconButton
-          onClick={clearTransaction}
-          disabled={cart.length === 0}
-          sx={{ borderRadius: 2, border: "1px solid", borderColor: "divider" }}
-        >
-          <Box component="span" sx={{ fontSize: 20, fontFamily: '"Material Icons"' }}>&#xE14C;</Box>
-        </IconButton>
+      <Stack spacing={1.5} mt={2}>
+        <Stack direction="row" spacing={1.5}>
+          <TextField
+            label="Pickup Date"
+            type="date"
+            value={pickupDate || ""}
+            onChange={(e) => setPickupDate(e.target.value || null)}
+            size="small"
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 2,
+                "&:hover fieldset": { borderColor: tenant?.primary_color || "#1976D2" },
+                "&.Mui-focused fieldset": { borderColor: tenant?.primary_color || "#1976D2" },
+              },
+            }}
+          />
+          <TextField
+            label="Delivery Date"
+            type="date"
+            value={deliveryDate || ""}
+            onChange={(e) => setDeliveryDate(e.target.value || null)}
+            size="small"
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 2,
+                "&:hover fieldset": { borderColor: tenant?.primary_color || "#1976D2" },
+                "&.Mui-focused fieldset": { borderColor: tenant?.primary_color || "#1976D2" },
+              },
+            }}
+          />
+        </Stack>
+
+        <Stack direction="row" spacing={1.5}>
+          <Button
+            fullWidth
+            variant="contained"
+            size="large"
+            disabled={!customer || cart.length === 0 || paymentMode !== "idle"}
+            onClick={handleMpesa}
+            startIcon={paymentMode === "mpesa" ? <CircularProgress size={16} color="inherit" /> : <Box component="span">📱</Box>}
+            sx={{ 
+              borderRadius: 3, 
+              py: 1.8, 
+              fontSize: 14,
+              fontWeight: 700,
+              background: `linear-gradient(135deg, ${tenant?.primary_color || '#1976D2'}, ${tenant?.secondary_color || '#9C27B0'})`,
+              "&:hover": {
+                background: `linear-gradient(135deg, ${tenant?.secondary_color || '#9C27B0'}, ${tenant?.primary_color || '#1976D2'})`,
+              },
+            }}
+          >
+            {paymentMode === "mpesa" ? "Processing..." : "M-PESA"}
+          </Button>
+          <Button
+            fullWidth
+            variant="outlined"
+            size="large"
+            disabled={!customer || cart.length === 0 || paymentMode !== "idle"}
+            onClick={handleCash}
+            startIcon={paymentMode === "cash" ? <CircularProgress size={16} color="inherit" /> : <Box component="span">💵</Box>}
+            sx={{ 
+              borderRadius: 3, 
+              py: 1.8, 
+              fontSize: 14,
+              fontWeight: 700,
+              borderColor: tenant?.primary_color || "#1976D2",
+              color: tenant?.primary_color || "#1976D2",
+              "&:hover": {
+                borderColor: tenant?.secondary_color || "#9C27B0",
+                color: tenant?.secondary_color || "#9C27B0",
+              },
+            }}
+          >
+            {paymentMode === "cash" ? "Processing..." : "CASH"}
+          </Button>
+          <Tooltip title="Clear cart">
+            <span>
+              <IconButton
+                onClick={clearTransaction}
+                disabled={cart.length === 0}
+                sx={{ 
+                  borderRadius: 2, 
+                  border: "1px solid", 
+                  borderColor: "divider",
+                  "&:hover": {
+                    borderColor: "error.main",
+                    color: "error.main",
+                  },
+                }}
+              >
+                <ClearAllIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </Stack>
       </Stack>
 
-      <Dialog open={receiptOpen} onClose={() => setReceiptOpen(false)} maxWidth="xs">
-        <DialogTitle>Receipt</DialogTitle>
-        <DialogContent>
+      {/* Receipt dialog */}
+      <Dialog open={receiptOpen} onClose={() => setReceiptOpen(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+         <DialogTitle sx={{ textAlign: "center", pb: 1 }}>
+           <Box component="span" sx={{ fontSize: 64, color: "success.main", display: "block", mx: "auto", mb: 1 }}>✅</Box>
+          <Typography variant="h5" fontWeight={800}>Order Complete</Typography>
+        </DialogTitle>
+        <DialogContent sx={{ textAlign: "center" }}>
           <Typography variant="body2" color="text.secondary">
-            Order completed successfully. Total: {formatKES(total)}
+            Payment received successfully.
+          </Typography>
+          <Typography 
+            variant="h4" 
+            fontWeight={800} 
+            sx={{ 
+              mt: 2,
+              background: `linear-gradient(135deg, ${tenant?.primary_color || '#1976D2'}, ${tenant?.secondary_color || '#9C27B0'})`,
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            {formatKES(lastTotal)}
           </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setReceiptOpen(false)}>Close</Button>
+        <DialogActions sx={{ justifyContent: "center", pb: 3, gap: 1.5 }}>
+          <Button 
+            variant="contained" 
+            onClick={() => setReceiptOpen(false)} 
+            sx={{ 
+              borderRadius: 28, 
+              px: 4,
+              py: 1.5,
+              background: `linear-gradient(135deg, ${tenant?.primary_color || '#1976D2'}, ${tenant?.secondary_color || '#9C27B0'})`,
+            }}
+          >
+            New Order
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

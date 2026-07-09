@@ -11,3 +11,6 @@ export { employeeApi } from "./employee.api";
 export { reportApi } from "./report.api";
 export { analyticsApi } from "./analytics.api";
 export { billingApi } from "./billing.api";
+export { branchApi } from "./branch.api";
+export { notificationApi } from "./notification.api";
+export { settingsApi } from "./settings.api";

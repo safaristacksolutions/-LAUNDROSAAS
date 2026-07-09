@@ -6,9 +6,8 @@ import type { Customer } from "../../../types";
 
 const columns: Column<Customer>[] = [
   { key: "phone", label: "Phone", render: (r) => r.phone },
-  { key: "first_name", label: "Name", render: (r) => r.first_name || r.phone },
-  { key: "total_orders", label: "Orders", render: (r) => r.total_orders, width: 80 },
-  { key: "total_spent_kes", label: "Total Spent", render: (r) => formatKES(r.total_spent_kes), width: 120 },
+  { key: "full_name", label: "Name", render: (r) => r.full_name || r.phone },
+  { key: "created_at", label: "Joined", render: (r) => new Date(r.created_at).toLocaleDateString(), width: 120 },
 ];
 
 export function CustomersTable() {

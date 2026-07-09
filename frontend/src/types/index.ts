@@ -3,8 +3,7 @@ export interface User {
   username: string;
   email: string;
   phone: string;
-  first_name: string;
-  last_name: string;
+  full_name: string;
   role: "admin" | "cashier" | "employee" | "superadmin";
   permissions: string[];
   is_onboarded: boolean;
@@ -34,55 +33,48 @@ export interface Branch {
 export interface Service {
   id: number;
   name: string;
-  icon: string;
-  price_kes: string;
-  unit: "kg" | "item";
+  unit: "kg" | "item" | "flat";
+  price: number;
   is_active: boolean;
 }
 
 export interface Customer {
   id: number;
+  full_name: string;
   phone: string;
-  first_name: string;
-  last_name: string;
   email: string;
-  total_orders: number;
-  total_spent_kes: string;
-  last_order_at: string | null;
-  is_loyalty: boolean;
+  address: string;
+  created_at: string;
 }
 
 export interface OrderItem {
   id?: number;
   service: number;
   service_name?: string;
-  quantity_kg?: number | null;
-  quantity_items?: number | null;
-  line_total_kes: number;
+  quantity: number | null;
+  weight_kg: number | null;
+  unit_price: number;
+  line_total: number;
 }
 
 export type OrderStatus =
-  | "pending" | "received" | "sorting" | "washing" | "drying"
-  | "ironing" | "packaging" | "ready" | "delivered" | "cancelled";
+  | "received" | "washing" | "drying" | "ironing" | "ready" | "delivered";
 
 export interface Order {
   id: number;
   order_number: string;
   customer: number;
-  customer_name: string;
-  created_by: number;
-  created_by_name: string;
+  customer_name?: string;
+  cashier: number;
+  cashier_name?: string;
   status: OrderStatus;
-  subtotal_kes: string;
-  vat_kes: string;
-  total_kes: string;
-  payment_method: "cash" | "mpesa" | "card";
-  expected_ready_at: string;
-  picked_up_at: string | null;
-  delivery_notes: string;
-  is_paid: boolean;
+  subtotal: number;
+  discount: number;
+  tax: number;
+  total: number;
+  pickup_date: string | null;
+  delivery_date: string | null;
   items: OrderItem[];
-  item_count?: { shirts: number; trousers: number; total_items: number; photo?: string };
   created_at: string;
   updated_at: string;
 }
@@ -90,11 +82,10 @@ export interface Order {
 export interface Payment {
   id: number;
   order: number;
-  method: "cash" | "mpesa" | "stripe";
-  amount: string;
-  state: "initiated" | "pending" | "processing" | "completed" | "failed" | "refunded";
-  mpesa_receipt: string;
-  paid_at: string | null;
+  method: "cash" | "mpesa" | "card";
+  amount: number;
+  reference: string;
+  paid_at: string;
 }
 
 export interface DashboardData {

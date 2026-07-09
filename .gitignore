@@ -25,6 +25,7 @@ frontend/package-lock.json
 *.swo
 .claude/
 .amazonq/
+.kiro/
 
 # OS
 .DS_Store

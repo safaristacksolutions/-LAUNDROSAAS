@@ -5,7 +5,7 @@ import { DataTable, type Column } from "../../../components/tables/DataTable";
 import type { User } from "../../../types";
 
 const columns: Column<User>[] = [
-  { key: "first_name", label: "Name", render: (r) => `${r.first_name} ${r.last_name}` },
+  { key: "full_name", label: "Name", render: (r) => r.full_name },
   { key: "phone", label: "Phone", render: (r) => r.phone },
   { key: "email", label: "Email", render: (r) => r.email },
   { key: "role", label: "Role", render: (r) => r.role, width: 100 },

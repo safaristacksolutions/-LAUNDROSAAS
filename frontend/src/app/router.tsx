@@ -5,6 +5,7 @@ import { DashboardLayout } from "../layouts/DashboardLayout";
 import { TenantGate } from "../app/TenantGate";
 
 const LoginPage = lazy(() => import("../features/authentication/pages/LoginPage"));
+const RegisterPage = lazy(() => import("../features/authentication/pages/RegisterPage"));
 const POSScreen = lazy(() => import("../features/pos/pages/POSScreen"));
 const DashboardPage = lazy(() => import("../features/dashboard/pages/DashboardPage"));
 const OrdersPage = lazy(() => import("../features/orders/pages/OrdersPage"));
@@ -21,6 +22,11 @@ export const router = createBrowserRouter([
     path: "/login",
     element: <AuthLayout />,
     children: [{ index: true, element: <LoginPage /> }],
+  },
+  {
+    path: "/register",
+    element: <AuthLayout />,
+    children: [{ index: true, element: <RegisterPage /> }],
   },
   {
     path: "/",

@@ -8,8 +8,8 @@ export interface BrandTokens {
 }
 
 export const defaultBrand: BrandTokens = {
-  primary: "#1976D2",
-  secondary: "#9C27B0",
+  primary: "#4F46E5",   // Indigo-600
+  secondary: "#0EA5E9", // Sky-500
   logo: "",
   name: "EasyWash",
   currency: "KES",

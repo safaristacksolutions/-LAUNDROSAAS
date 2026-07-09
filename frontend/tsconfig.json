@@ -17,7 +17,11 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "allowJs": true
+    "allowJs": true,
+    "paths": {
+      "@mui/icons-material": ["./src/icons"],
+      "@mui/icons-material/*": ["./src/icons/*"]
+    }
   },
   "include": ["src"]
 }
