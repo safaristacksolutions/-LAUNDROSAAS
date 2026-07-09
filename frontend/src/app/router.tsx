@@ -16,6 +16,7 @@ const EmployeesPage = lazy(() => import("../features/employees/pages/EmployeesPa
 const ReportsPage = lazy(() => import("../features/reports/pages/ReportsPage"));
 const BillingPage = lazy(() => import("../features/billing/pages/BillingPage"));
 const AnalyticsPage = lazy(() => import("../features/analytics/pages/AnalyticsPage"));
+const SettingsPage = lazy(() => import("../features/settings/pages/SettingsPage"));
 
 export const router = createBrowserRouter([
   {
@@ -46,6 +47,7 @@ export const router = createBrowserRouter([
           { path: "reports", element: <ReportsPage /> },
           { path: "billing", element: <BillingPage /> },
           { path: "analytics", element: <AnalyticsPage /> },
+          { path: "settings", element: <SettingsPage /> },
         ],
       },
     ],
